@@ -1,5 +1,5 @@
 import { gql, request } from 'graphql-request';
-
+import { getAccessToken } from '../auth';
 const GRAPHQL_URL = 'http://localhost:9000/graphql'
 export async function getJobs() {
   const query = gql`
@@ -73,8 +73,22 @@ export async function createJob(input) {
   `
 
   const variables = { input }
-  return request(GRAPHQL_URL, query, variables);
+  const headers = { Authorization: `Bearer ${getAccessToken()}` }
+  return request(GRAPHQL_URL, query, variables, headers);
+}
 
+export async function deleteJob(id) {
+  const query = gql`
+    mutation deleteJob($id: ID!) {
+      deleteJob(id: $id) {
+        id
+      }
+    }
+  `
+
+  const variables = { id };
+
+  return request(GRAPHQL_URL, query, variables)
 }
 
 

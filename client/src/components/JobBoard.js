@@ -1,9 +1,14 @@
 import JobList from './JobList'
-import { getJobs } from '../graphql/queries'
+import { getJobs, deleteJob } from '../graphql/queries'
 import { useEffect, useState } from 'react'
 
 function JobBoard() {
   const [jobs, setJobs] = useState([]);
+  const onDelete = (id) => {
+    deleteJob(id)
+      .then(() => setJobs(jobs.filter(j => j.id !== id)))
+  }
+
   useEffect(() => {
     getJobs().then(setJobs)
   }, []);
@@ -13,7 +18,7 @@ function JobBoard() {
       <h1 className="title">
         Job Board
       </h1>
-      <JobList jobs={jobs} />
+      <JobList jobs={jobs} onDelete={onDelete} />
     </div>
   );
 }
