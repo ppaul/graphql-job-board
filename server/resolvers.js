@@ -1,5 +1,12 @@
 import { Job, Company } from './db.js';
 
+
+function checkCondition(condition, errMessage) {
+  if (!condition) {
+    throw new Error(errMessage);
+  }
+}
+
 export const resolvers = {
   Query: {
     company: (_root, { id }) => Company.findById(id),
@@ -9,26 +16,21 @@ export const resolvers = {
 
   Mutation: {
     createJob: async (_root, { input }, { user }) => {
-      if (!user) {
-        throw new Error("Not authorized!");
-      }
+      checkCondition(!!user, "Not authorized");
       return Job.create({ ...input, companyId: user.companyId });
     },
-    deleteJob: (_root, { id }, { user }) => {
-      if (!user) {
-        throw new Error("Not authorized!");
-      }
+    deleteJob: async (_root, { id }, { user }) => {
+      checkCondition(!!user, "Not authorized");
       const jobToDelete = await Job.findById(id);
-      if (jobToDelete.companyId !== user.companyId) {
-        throw new Error("Not authorized!");
-      }
+      checkCondition(jobToDelete.companyId === user.companyId, "You cannot delete a job from other company");
 
       return Job.delete(id)
     },
-    updateJob: (_root, { input }, { user }) => {
-      if (!user) {
-        throw new Error("Not authorized!");
-      }
+    updateJob: async (_root, { input }, { user }) => {
+      checkCondition(!!user, "Not authorized");
+      const jobToUpdate = await Job.findById(input.id);
+      checkCondition(jobToUpdate.companyId === user.companyId, "You cannot update a job from other company");
+
       return Job.update(input)
     },
   },

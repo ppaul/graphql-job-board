@@ -87,8 +87,8 @@ export async function deleteJob(id) {
   `
 
   const variables = { id };
-
-  return request(GRAPHQL_URL, query, variables)
+  const headers = { Authorization: `Bearer ${getAccessToken()}` }
+  return request(GRAPHQL_URL, query, variables, headers)
 }
 
 
