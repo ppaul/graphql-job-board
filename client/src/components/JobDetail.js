@@ -8,7 +8,10 @@ function JobDetail() {
   const { jobId } = useParams();
 
   useEffect(() => {
-    getJob(jobId).then(setJob)
+    (async () => {
+      const { data: { job } } = await getJob(jobId);
+      setJob(job)
+    })()
   }, [jobId])
 
   if (!job) {
