@@ -1,17 +1,26 @@
 import JobList from './JobList'
-import { getJobs, deleteJob } from '../graphql/queries'
-import { useEffect, useState } from 'react'
+import { JOBS_QUERY, deleteJob } from '../graphql/queries'
+import { useQuery } from '@apollo/client';
 
 function JobBoard() {
-  const [jobs, setJobs] = useState([]);
-  const onDelete = (id) => {
-    deleteJob(id)
-      .then(() => setJobs(jobs.filter(j => j.id !== id)))
+
+  const onDelete = id => deleteJob(id); //todo update
+  const {
+    data,
+    loading,
+    error
+  } = useQuery(JOBS_QUERY)
+
+  if (error) {
+    return <div>Something went wrong</div>
   }
 
-  useEffect(() => {
-    getJobs().then(setJobs)
-  }, []);
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+
+  const { jobs } = data;
 
   return (
     <div>
