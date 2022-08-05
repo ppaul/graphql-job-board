@@ -9,7 +9,7 @@ function JobBoard() {
     data,
     loading,
     error
-  } = useQuery(JOBS_QUERY)
+  } = useQuery(JOBS_QUERY, { fetchPolicy: 'network-only' })
 
   if (error) {
     return <div>Something went wrong</div>

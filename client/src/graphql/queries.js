@@ -20,10 +20,22 @@ export const JOBS_QUERY = gql`
   }
   `;
 
-export async function getJobs() {
-  const { data: { jobs } } = await client.query({ query: JOBS_QUERY, fetchPolicy: 'network-only' });
-  return jobs;
+
+export const COMPANY_QUERY = gql`
+query getCompany($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    description
+    jobs {
+      title
+      description
+      id
+    }
+  }
 }
+`;
+
 
 const JOB_DETAIL_FRAGMENT = gql`
   fragment JobDetail on Job {
@@ -37,7 +49,7 @@ const JOB_DETAIL_FRAGMENT = gql`
   }
 `
 
-const JOB_QUERY = gql`
+export const JOB_QUERY = gql`
   query JobQuery($id: ID!) {
     job(id: $id) {
       ...JobDetail
@@ -54,50 +66,20 @@ export function getJob(id) {
 }
 
 export async function getCompany(id) {
-  const query = gql`
-    query getCompany($id: ID!) {
-      company(id: $id) {
-        id
-        name
-        description
-        jobs {
-          title
-          description
-          id
-        }
-      }
-    }
-  `;
-
   const variables = { id }
-  const result = await client.query({ query, variables });
-  return result.job;
+  const result = await client.query({ query: COMPANY_QUERY, variables });
+  return result.company;
 }
 
-export function createJob(input) {
-  const mutation = gql`
-    mutation createJob($input: CreateJobInput) {
-      job: createJob(input: $input) {
-        ...JobDetail
-      }
-    }
-    ${JOB_DETAIL_FRAGMENT}
-  `
 
-  const variables = { input }
-  const context = {
-    headers: { Authorization: `Bearer ${getAccessToken()}` }
+export const CREATE_JOB_MUTATION = gql`
+  mutation createJob($input: CreateJobInput) {
+    job: createJob(input: $input) {
+      ...JobDetail
+    }
   }
-  return client.mutate({
-    mutation, variables, context, update: (cache, { data: { job } }) => {
-      cache.writeQuery({
-        query: JOB_QUERY,
-        variables: { id: job.id },
-        data: { job }
-      })
-    }
-  });
-}
+  ${JOB_DETAIL_FRAGMENT}
+  `;
 
 export async function deleteJob(id) {
   const mutation = gql`
